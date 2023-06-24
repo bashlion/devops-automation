@@ -7,7 +7,21 @@ pipeline {
     stages{
         stage('Scan base image to be used to buil application'){
             steps{
-                neuvector nameOfVulnerabilityToExemptFour: '', nameOfVulnerabilityToExemptOne: '', nameOfVulnerabilityToExemptThree: '', nameOfVulnerabilityToExemptTwo: '', nameOfVulnerabilityToFailFour: '', nameOfVulnerabilityToFailOne: '', nameOfVulnerabilityToFailThree: '', nameOfVulnerabilityToFailTwo: '', numberOfHighSeverityToFail: '200', numberOfMediumSeverityToFail: '200', registrySelection: 'docker-pub', repository: 'openjdk', scanLayers: true, scanTimeout: 10, tag: '8'
+                neuvector nameOfVulnerabilityToExemptFour: '', 
+                nameOfVulnerabilityToExemptOne: '', 
+                nameOfVulnerabilityToExemptThree: '', 
+                nameOfVulnerabilityToExemptTwo: '', 
+                nameOfVulnerabilityToFailFour: '', 
+                nameOfVulnerabilityToFailOne: '', 
+                nameOfVulnerabilityToFailThree: '', 
+                nameOfVulnerabilityToFailTwo: '', 
+                numberOfHighSeverityToFail: '', 
+                numberOfMediumSeverityToFail: '', 
+                registrySelection: 'docker-pub', 
+                repository: 'openjdk', 
+                scanLayers: true, 
+                scanTimeout: 10, 
+                tag: '8'
             }
         }
         stage('Build Maven'){
@@ -16,11 +30,31 @@ pipeline {
                 sh 'mvn clean install'
             }
         }
-        stage('Build docker image'){
+        stage('Build docker image and push it to local registry for scanning'){
             steps{
                 script{
-                    sh 'docker build -t tapasn47/devops-integration:1.0 .'
+                    sh 'docker build -t local-reg:5000/tapasn47/devops-integration:1.0 .'
                 }
+            }
+        }
+        stage('Scan built image'){
+            steps {
+                neuvector nameOfVulnerabilityToExemptFour: '', 
+                nameOfVulnerabilityToExemptOne: '', 
+                nameOfVulnerabilityToExemptThree: '', 
+                nameOfVulnerabilityToExemptTwo: '', 
+                nameOfVulnerabilityToFailFour: '', 
+                nameOfVulnerabilityToFailOne: '', 
+                nameOfVulnerabilityToFailThree: '', 
+                nameOfVulnerabilityToFailTwo: '', 
+                numberOfHighSeverityToFail: '', 
+                numberOfMediumSeverityToFail: '', 
+                registrySelection: 'local', 
+                repository: 'local-reg:5000/tapasn47/devops-integration', 
+                scanLayers: true, 
+                scanTimeout: 10, 
+                standaloneScanner: true, 
+                tag: '1.0'
             }
         }
         stage('Push image to Hub'){
@@ -30,21 +64,36 @@ pipeline {
                    sh 'docker login -u tapasn47 -p ${dockerhubpwd}'
 
 }
-                   sh 'docker push tapasn47/devops-integration'
+                   sh 'docker tag local-reg:5000/tapasn47/devops-integration:1.0 tapasn47/devops-integration:2.0'
+                   sh 'docker push tapasn47/devops-integration:2.0'
                 }
             }
         }
         stage('Scan pushed image'){
             steps {
-                neuvector nameOfVulnerabilityToExemptFour: '', nameOfVulnerabilityToExemptOne: '', nameOfVulnerabilityToExemptThree: '', nameOfVulnerabilityToExemptTwo: '', nameOfVulnerabilityToFailFour: '', nameOfVulnerabilityToFailOne: '', nameOfVulnerabilityToFailThree: '', nameOfVulnerabilityToFailTwo: '', numberOfHighSeverityToFail: '', numberOfMediumSeverityToFail: '', registrySelection: 'docker-pri', repository: 'tapasn47/devops-integration', scanLayers: true, scanTimeout: 10, tag: '1.0'
+                neuvector nameOfVulnerabilityToExemptFour: '', 
+                nameOfVulnerabilityToExemptOne: '', 
+                nameOfVulnerabilityToExemptThree: '', 
+                nameOfVulnerabilityToExemptTwo: '', 
+                nameOfVulnerabilityToFailFour: '', 
+                nameOfVulnerabilityToFailOne: '', 
+                nameOfVulnerabilityToFailThree: '', 
+                nameOfVulnerabilityToFailTwo: '', 
+                numberOfHighSeverityToFail: '', 
+                numberOfMediumSeverityToFail: '', 
+                registrySelection: 'docker-pri', 
+                repository: 'tapasn47/devops-integration', 
+                scanLayers: true, 
+                scanTimeout: 10, 
+                tag: '2.0'
             }
         }
         stage('Deploy to k8s'){
             steps{
                 script{
                     kubeconfig(credentialsId: 'k8s-config-2', serverUrl: 'https://192.168.211.204:6443') {
-                        sh 'kubectl create ns devops-deploy-1'
-                        sh 'kubectl apply -f deploymentservice.yaml -n devops-deploy-1 '
+                        sh 'kubectl create ns devops-deploy-3'
+                        sh 'kubectl apply -f deploymentservice.yaml -n devops-deploy-3'
 }
                 }
             }
