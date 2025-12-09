@@ -21,7 +21,7 @@ pipeline {
                 repository: 'openjdk', 
                 scanLayers: true, 
                 scanTimeout: 10, 
-                tag: '8'
+                tag: '9-b140-jdk'
             }
         }
         stage('Build Maven'){
